@@ -1,45 +1,44 @@
-const { faker } = require('@faker-js/faker');
+const ProductsService = require('../services/products.service');
+
 const express = require('express');
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  const products = [];
-  const { size } = req.query;
-  const limit = size || 10;
-  for (let i = 0; i < limit; i++) {
-    products.push({
-      title: faker.commerce.productName(),
-      price: parseInt(faker.commerce.price(), 10),
-      description: faker.commerce.productDescription(),
-      image: faker.image.imageUrl(),
-      color: faker.color.human(),
-    });
-  }
-  res.json(products);
-});
+const service = new ProductsService();
 
-router.get('/filter', (req, res) => {
-  res.send('soy un filter');
+router.get('/', (req, res) => {
+  const products = service.find();
+
+  res.json(products);
 });
 
 router.get('/:id', (req, res) => {
   const { id } = req.params;
-  res.json({
-    id,
-    title: faker.commerce.productName(),
-    price: parseInt(faker.commerce.price(), 10),
-    description: faker.commerce.productDescription(),
-    image: faker.image.imageUrl(),
-    color: faker.commerce.color(),
-  });
+
+  const product = service.findOne(id);
+
+  if (product) {
+    res.status(200).json(product);
+  } else {
+    res.status(404).json({
+      message: 'Not found',
+    });
+  }
 });
 
 router.post('/', (req, res) => {
   const body = req.body;
-  res.status(201).json({
-    message: 'created',
-    data: body,
-  });
+  const { error, product } = service.create(body);
+  if (error) {
+    res.status(400).json({
+      error,
+      product,
+    });
+  } else {
+    res.status(201).json({
+      message: 'Product created',
+      product,
+    });
+  }
 });
 
 router.put('/:id', (req, res) => {
