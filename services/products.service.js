@@ -61,7 +61,7 @@ class ProductsService {
   async delete(id) {
     const index = this.products.findIndex((item) => item.id === id);
     if (index === -1) {
-      throw new Error('No se ha encontrado ningún producto con ese ID');
+      throw boom.notFound('Product not Found');
     }
     this.products.splice(index, 1);
     return 'Product deleted';
