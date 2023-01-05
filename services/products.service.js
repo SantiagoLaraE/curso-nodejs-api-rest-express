@@ -17,58 +17,59 @@ class ProductsService {
       });
     }
   }
-  create(product) {
-    const productSchema = Object.keys(this.products[0]).filter(
-      (prop) => prop !== 'id'
-    );
 
-    const newProductProps = Object.keys(product);
-
-    const notValidProperties = newProductProps.reduce((arr, item) => {
-      if (!productSchema.includes(item)) {
-        arr.push(item);
-      }
-      return arr;
-    }, []);
-
-    const requiredProperties = productSchema.reduce((arr, item) => {
-      if (!newProductProps.includes(item)) {
-        arr.push(item);
-      }
-      return arr;
-    }, []);
-
-    const message = () => {
-      let text = '';
-      if (notValidProperties.length) {
-        text += `This properties are not valid: ${notValidProperties.join(
-          ', '
-        )}. `;
-      }
-      if (requiredProperties.length) {
-        text += `This properties are required: ${requiredProperties.join(
-          ', '
-        )}`;
-      }
-      return text;
+  async create(data) {
+    const newProduct = {
+      id: faker.datatype.uuid(),
+      ...data,
     };
-    const error = message() ? message() : null;
+    this.products.push(newProduct);
+    return newProduct;
+  }
 
-    if (!error) {
-      product.id = faker.datatype.uuid();
+  async find() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(this.products);
+      }, 1000);
+    });
+  }
+
+  async findOne(id) {
+    return new Promise((resolve, reject) => {
+      const product = this.products.find((item) => item.id === id);
+      if (product) {
+        resolve(product);
+      } else {
+        const error = new Error('Product not Found');
+        reject(error);
+      }
+    });
+  }
+
+  async update(id, data) {
+    const index = this.products.findIndex((item) => item.id === id);
+    if (index === -1) {
+      throw new Error('No se ha encontrado ningún producto con ese ID');
     }
 
-    return { error, product };
+    const product = this.products[index];
+    this.products[index] = {
+      ...product,
+      ...data,
+    };
+
+    return this.products[index];
   }
 
-  find() {
-    return this.products;
+  async delete(id) {
+    const index = this.products.findIndex((item) => item.id === id);
+    if (index === -1) {
+      throw new Error('No se ha encontrado ningún producto con ese ID');
+    }
+    this.products.splice(index, 1);
+    return 'Product deleted';
   }
-  findOne(id) {
-    return this.products.find((item) => item.id === id);
-  }
-  update() {}
-  delete() {}
 }
 
 module.exports = ProductsService;

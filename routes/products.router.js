@@ -5,67 +5,58 @@ const router = express.Router();
 
 const service = new ProductsService();
 
-router.get('/', (req, res) => {
-  const products = service.find();
-
-  res.json(products);
+router.get('/', async (req, res) => {
+  const products = await service.find();
+  res.status(200).json(products);
 });
 
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-
-  const product = service.findOne(id);
-
-  if (product) {
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await service.findOne(id);
     res.status(200).json(product);
-  } else {
+  } catch (error) {
     res.status(404).json({
-      message: 'Not found',
+      message: error.message,
     });
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const body = req.body;
-  const { error, product } = service.create(body);
-  if (error) {
-    res.status(400).json({
-      error,
-      product,
-    });
-  } else {
-    res.status(201).json({
-      message: 'Product created',
-      product,
-    });
-  }
-});
+  const product = await service.create(body);
 
-router.put('/:id', (req, res) => {
-  const { id } = req.params;
-  const body = req.body;
-  res.json({
-    message: 'updated',
-    data: body,
-    id,
+  res.status(201).json({
+    message: 'Product created',
+    product,
   });
 });
 
-router.patch('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const body = req.body;
+  const product = await service.update(id, body);
   res.json({
     message: 'updated',
-    data: body,
-    id,
+    product,
   });
 });
 
-router.delete('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   const { id } = req.params;
+  const body = req.body;
+  const product = await service.update(id, body);
   res.json({
-    message: 'deleted',
-    id,
+    message: 'updated',
+    product,
+  });
+});
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  const rta = await service.delete(id);
+  res.json({
+    message: rta,
   });
 });
 
